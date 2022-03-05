@@ -1,7 +1,5 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:flutter/foundation.dart';
-
 class CartItem {
   final String id;
   final String title;
