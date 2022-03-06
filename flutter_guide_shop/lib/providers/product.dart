@@ -21,15 +21,17 @@ class Product with ChangeNotifier {
       @required this.imageUrl,
       this.isFavorite = false});
 
-  Future<void> toggleFavouriteStatus() async {
+  Future<void> toggleFavouriteStatus(String token, String userId) async {
     final url = Uri.parse(
-        'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/products/$id.json');
+        'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/userFavorites/$userId/$id.json?auth=$token');
 
     isFavorite = !isFavorite;
     notifyListeners();
     try {
-      final response =
-          await http.patch(url, body: json.encode({'isFavourite': isFavorite}));
+      final response = await http.put(url,
+          body: json.encode(
+            isFavorite,
+          ));
 
       if (response.statusCode >= 400)
         throw HttpException('Error adding to favourites');

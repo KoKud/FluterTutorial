@@ -42,6 +42,11 @@ class Products with ChangeNotifier {
     // ),
   ];
   // var _showFavoritesOnly = false;
+  final String authToken;
+  final String userId;
+
+  Products(this.authToken, this.userId, this._items);
+
   List<Product> get items {
     // if (_showFavoritesOnly) {
     //   return _items.where((prodItem) => prodItem.isFavorite).toList();
@@ -67,26 +72,34 @@ class Products with ChangeNotifier {
   //   notifyListeners();
   // }
 
-  Future<void> fetchAndSetProducts() async {
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    final filterString =
+        filterByUser ? '&orderBy="creatorId"&&equalTo="$userId"' : '';
     final url = Uri.parse(
-        'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/products.json');
+        'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/products.json?auth=$authToken$filterString');
 
     try {
       final response = await http.get(url);
       // print(json.decode(response.body));
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
       final List<Product> loadedProduct = [];
-      if (extractedData != null)
-        extractedData.forEach((prodId, prodData) {
-          loadedProduct.add(Product(
-            id: prodId,
-            title: prodData['title'],
-            description: prodData['description'],
-            price: prodData['price'],
-            imageUrl: prodData['imageUrl'],
-            isFavorite: prodData['isFavorite'],
-          ));
-        });
+      if (extractedData == null) return;
+      final favoriteResponse = await http.get(Uri.parse(
+          'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$authToken'));
+      final favoriteData = json.decode(favoriteResponse.body);
+      print(favoriteData);
+
+      extractedData.forEach((prodId, prodData) {
+        loadedProduct.add(Product(
+          id: prodId,
+          title: prodData['title'],
+          description: prodData['description'],
+          price: prodData['price'],
+          imageUrl: prodData['imageUrl'],
+          isFavorite:
+              favoriteData == null ? false : favoriteData[prodId] ?? false,
+        ));
+      });
       _items = loadedProduct;
       notifyListeners();
     } catch (e) {
@@ -97,7 +110,7 @@ class Products with ChangeNotifier {
 //temp image url: https://interactive-examples.mdn.mozilla.net/media/cc0-images/grapefruit-slice-332-332.jpg
   Future<void> addProduct(Product product) async {
     final url = Uri.parse(
-        'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/products.json');
+        'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/products.json?auth=$authToken');
 
     try {
       final response = await http.post(url,
@@ -106,7 +119,7 @@ class Products with ChangeNotifier {
             'description': product.description,
             'imageUrl': product.imageUrl,
             'price': product.price,
-            'isFavorite': product.isFavorite,
+            'creatorId': userId,
           }));
       final newProduct = Product(
         id: json.decode(response.body)['name'],
@@ -128,7 +141,7 @@ class Products with ChangeNotifier {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
     if (prodIndex >= 0) {
       final url = Uri.parse(
-          'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/products/$id.json');
+          'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
       await http.patch(url,
           body: json.encode({
             'title': newProduct.title,
@@ -146,7 +159,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     final url = Uri.parse(
-        'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/products/$id.json');
+        'https://flutter-tutorial-shop-ap-e41db-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
     final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
     var existingProduct = _items[existingProductIndex];
     _items.removeAt(existingProductIndex);
