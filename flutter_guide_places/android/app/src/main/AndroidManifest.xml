@@ -1,9 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.flutter_guide_places">
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
    <application
         android:label="flutter_guide_places"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+    <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="AIzaSyAdp0mHeUNiilqigF5KMUvdop4qB1eEKxc"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
