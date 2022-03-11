@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
 class AuthForm extends StatefulWidget {
+  AuthForm(this.submitFn, this.isLoading);
+
+  final bool isLoading;
+  final void Function(String email, String username, String password,
+      bool isLogin, BuildContext ctx) submitFn;
+
   @override
   State<AuthForm> createState() => _AuthFormState();
 }
@@ -18,12 +24,13 @@ class _AuthFormState extends State<AuthForm> {
 
     if (isValid) {
       _formKey.currentState.save();
-
-      print(_userName);
-      print(_userEmail);
-      print(_userPassword);
-
-      //Use those values to send our auth request ...
+      widget.submitFn(
+        _userEmail.trim(),
+        _userName.trim(),
+        _userPassword.trim(),
+        _isLogin,
+        context,
+      );
     }
   }
 
@@ -81,21 +88,24 @@ class _AuthFormState extends State<AuthForm> {
                   SizedBox(
                     height: 12,
                   ),
-                  RaisedButton(
-                    onPressed: _trySubmit,
-                    child: Text(_isLogin ? 'Login' : 'Sign up'),
-                  ),
-                  FlatButton(
-                    onPressed: () {
-                      setState(() {
-                        _isLogin = !_isLogin;
-                      });
-                    },
-                    child: Text(_isLogin
-                        ? 'Create new account'
-                        : 'I aledy have an account'),
-                    textColor: Theme.of(context).primaryColor,
-                  )
+                  widget.isLoading
+                      ? CircularProgressIndicator()
+                      : RaisedButton(
+                          onPressed: _trySubmit,
+                          child: Text(_isLogin ? 'Login' : 'Sign up'),
+                        ),
+                  if (!widget.isLoading)
+                    FlatButton(
+                      onPressed: () {
+                        setState(() {
+                          _isLogin = !_isLogin;
+                        });
+                      },
+                      child: Text(_isLogin
+                          ? 'Create new account'
+                          : 'I aledy have an account'),
+                      textColor: Theme.of(context).primaryColor,
+                    )
                 ],
               ),
             ),
