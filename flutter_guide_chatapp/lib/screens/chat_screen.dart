@@ -6,31 +6,16 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../widgets/chat/messages.dart';
 import '../widgets/chat/new_message.dart';
 
-class ChatScreen extends StatefulWidget {
-  @override
-  State<ChatScreen> createState() => _ChatScreenState();
-}
-
-class _ChatScreenState extends State<ChatScreen> {
-  @override
-  void initState() {
-    final messaging = FirebaseMessaging.instance;
-
-    FirebaseMessaging.onMessage.listen((event) {
-      print('BRODCAST!!!!!');
-      print(event.data);
-    });
-
-    super.initState();
-  }
-
+class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    FirebaseMessaging.instance.subscribeToTopic('chat');
     return Scaffold(
       appBar: AppBar(
         title: Text('FlutterChat'),
         actions: [
           DropdownButton(
+            underline: Container(),
             icon: Icon(
               Icons.more_vert,
               color: Theme.of(context).primaryIconTheme.color,
