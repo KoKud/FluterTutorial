@@ -1,4 +1,4 @@
-package com.example.flutter_guide_places
+package io.github.koqud.great_places
 
 import io.flutter.embedding.android.FlutterActivity
 
